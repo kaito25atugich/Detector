@@ -1,5 +1,5 @@
 
-You can use detectors shown below.
+This project is designed with reproducibility in mind and can be used for paper reproduction purposes. Below is a list of available detectors:
 
 - DetectGPT
 - FastDetectGPT
@@ -16,17 +16,17 @@ You can use detectors shown below.
 - Intrinsic-Dimension
 
 ### How to use
-If you execute following code, then you can get the result for Zero-shot Detector without Binoculars.
-
+1. Run the following code to obtain results for the Zero-shot Detector without Binoculars:
 ```
 python detection.py
 ```
+2. If you specifically need results from the Binoculars detector, execute the following command:
+```
+python detection_binoculars_only.py
+```
+3. To enable the use of other detectors, set the is_{detector} flag in detection.py. This allows you to experiment with different methods.
 
-If you want to get the binoculars result, then run `detection_binoculars_only.py`.
-
-When you set `is_{detector}` flag in `detection.py`, it enables the use of other methods.
-
-And you can run white-box settings using the following code.
+For white-box settings, use the following code:
 
 ```
 python detection.py --prompt
@@ -40,3 +40,4 @@ Some code in this projects is derived from or refers to the work of the followin
 - https://github.com/ArGintum/GPTID
 - https://github.com/ahans30/Binoculars
 
+Feel free to explore and enhance the functionality based on your specific needs. If you have any questions or suggestions, please don't hesitate to reach out.
