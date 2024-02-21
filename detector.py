@@ -1031,15 +1031,15 @@ def detect(
     save_roc_curves(figure_output_path + ".png", output_json, model_name)
 
 
-def get_prompt_all(prompt_text, text):
-    return f"""[INST] <<SYS>>
-    {prompt_text}
-    <</SYS>>
-    {text}[/INST]"""
-
-
 # def get_prompt_all(prompt_text, text):
-#     return prompt_text + text
+#     return f"""[INST] <<SYS>>
+#     {prompt_text}
+#     <</SYS>>
+#     {text}[/INST]"""
+
+
+def get_prompt_all(prompt_text, text):
+    return prompt_text + text
 
 
 def get_prompt_sum():

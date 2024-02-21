@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("--ai_source", default="llama2")
     parser.add_argument("--dataset_name", default="xsum")
     parser.add_argument("--prompt", action="store_true")
-    parser.add_argument("--estimation_prompt", action="store_true")
+    parser.add_argument("--estimated_prompt", action="store_true")
     parser.add_argument("--token_size", default=200)
     parser.add_argument("--perturbation_num", default=5, type=int)
     parser.add_argument("--fast_sample_num", default=10000, type=int)
