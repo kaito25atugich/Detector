@@ -1,9 +1,9 @@
 import argparse
 
-from detector import detect, get_prompt_sum
+from detector import detect, get_prompt_estimation, get_prompt_sum
 
 
-def main(dataset_name, ai_source, is_prompt):
+def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
 
     model_name = "gpt2-xl"
 
@@ -19,11 +19,16 @@ def main(dataset_name, ai_source, is_prompt):
     file_path_human = f"./txtdata/{file_human}.txt"
     file_path_ai = f"./txtdata/{file_ai}.json"
 
-    if is_prompt:
-        prompt_list = get_prompt_sum()
+    file_prompt_human = "./txtdata/xsum_est_prompt_for_summary_from_human.json"
+    file_prompt_ai = "./txtdata/xsum_est_prompt_for_summary_from_ai_llama.json"
 
-    else:
-        prompt_list = list()
+    prompt_list = list()
+    if is_prompt:
+        if is_estimation_prompt:
+            prompt_list += get_prompt_estimation(file_prompt_human)
+            prompt_list += get_prompt_estimation(file_prompt_ai)
+        else:
+            prompt_list += get_prompt_sum()
 
     is_entropy = False
     is_detectgpt = False
@@ -67,6 +72,7 @@ def main(dataset_name, ai_source, is_prompt):
         is_radar=is_radar,
         is_binoculars=is_binoculars,
         is_prompt=is_prompt,
+        is_estimation_prompt=is_estimation_prompt,
         prompt_list=prompt_list,
     )
 
@@ -76,7 +82,8 @@ if __name__ == "__main__":
     parser.add_argument("--ai_source", default="llama")
     parser.add_argument("--dataset_name", default="xsum")
     parser.add_argument("--prompt", action="store_true")
+    parser.add_argument("--estimation_prompt", action="store_true")
 
     args = parser.parse_args()
 
-    main(args.dataset_name, args.ai_source, args.prompt)
+    main(args.dataset_name, args.ai_source, args.prompt, args.estimation_prompt)

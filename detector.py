@@ -916,7 +916,7 @@ class Detector:
 
     def binoculars_detection(self, input_text, prompt):
         score = self.bino.compute_score(input_text, prompt)
-        self.scores[self.binoculars] = -score
+        self.scores[self.binoculars] = score
 
 
 def count_masks(text):
@@ -949,6 +949,7 @@ def detect(
     fast_sample_num: int = 10000,
     additional_string: str = "",
     is_prompt: bool = False,
+    is_estimation_prompt: bool = False,
     prompt_list: list[str] = [],
 ):
     try:
@@ -971,8 +972,8 @@ def detect(
     label_list = [HUMAN_GENERATED] * len(human_texts) + [AI_GENERATED] * len(ai_texts)
     all_texts = human_texts + ai_texts
 
-    if is_prompt:
-        assert len(ai_texts) == len(prompt_list)
+    # if is_prompt:
+    #     assert len(ai_texts) == len(prompt_list)
 
     detector = Detector(
         model_name,
@@ -1009,8 +1010,11 @@ def detect(
 
     for idx, text in enumerate(tqdm(all_texts, desc="Some detector is working... :")):
         prompt_label = -1
-        if is_prompt and label_list[idx]:
-            prompt_label = idx - len(human_texts)
+        if is_prompt:
+            if is_estimation_prompt:
+                prompt_label = idx
+            elif label_list[idx]:
+                prompt_label = idx - len(human_texts)
         detector.detect(text, prompt_label)
         for method, score in detector.scores.items():
             scores.setdefault(method, list()).append(score)
@@ -1027,13 +1031,18 @@ def detect(
     save_roc_curves(figure_output_path + ".png", output_json, model_name)
 
 
-def get_prompt_sum():
-    def get_prompt_all(text):
-        return f"""[INST] <<SYS>>
-        {prompt_text}
-        <</SYS>>
-        {text}[/INST]"""
+def get_prompt_all(prompt_text, text):
+    return f"""[INST] <<SYS>>
+    {prompt_text}
+    <</SYS>>
+    {text}[/INST]"""
 
+
+# def get_prompt_all(prompt_text, text):
+#     return prompt_text + text
+
+
+def get_prompt_sum():
     prompt_text = "Would you summarize following sentences, please."
 
     prompt_texts = list()
@@ -1041,6 +1050,18 @@ def get_prompt_sum():
     data = _load_texts("./txtdata/xsum_human_for_sum.txt")
 
     for value in data:
-        prompt_texts.append(get_prompt_all(value))
+        prompt_texts.append(get_prompt_all(prompt_text, value))
+
+    return prompt_texts
+
+
+def get_prompt_estimation(file_path):
+    prompt_texts = list()
+
+    data = _load_texts("./txtdata/xsum_human_for_sum.txt")
+    prompts = _load_texts_from_json(file_path)
+
+    for p, d in zip(prompts, data):
+        prompt_texts.append(get_prompt_all(p, d))
 
     return prompt_texts

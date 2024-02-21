@@ -1,12 +1,13 @@
 import argparse
 
-from detector import detect, get_prompt_sum
+from detector import detect, get_prompt_estimation, get_prompt_sum
 
 
 def main(
     dataset_name,
     ai_source,
     is_prompt,
+    is_estimation_prompt,
     token_size,
     perturbation_num,
     fast_sample_num,
@@ -26,17 +27,22 @@ def main(
     file_path_ai = f"./txtdata/{file_ai}.txt"
     file_path_ai = f"./txtdata/{file_ai}.json"
 
+    file_prompt = "./txtdata/xsum_est_prompt_for_summary_from_ai_llama.json"
+
     if is_prompt:
-        prompt_list = get_prompt_sum()
+        if is_estimation_prompt:
+            prompt_list = get_prompt_estimation(file_prompt)
+        else:
+            prompt_list = get_prompt_sum()
 
     else:
         prompt_list = list()
 
     is_entropy = True
-    is_detectgpt = True
+    is_detectgpt = False
     is_fastdetectgpt = True
     is_lrr = True
-    is_npr = True
+    is_npr = False
     is_fastnpr = True
     is_roberta = True
     is_logp = True
@@ -87,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("--ai_source", default="llama2")
     parser.add_argument("--dataset_name", default="xsum")
     parser.add_argument("--prompt", action="store_true")
+    parser.add_argument("--estimation_prompt", action="store_true")
     parser.add_argument("--token_size", default=200)
     parser.add_argument("--perturbation_num", default=5, type=int)
     parser.add_argument("--fast_sample_num", default=10000, type=int)
@@ -98,6 +105,7 @@ if __name__ == "__main__":
         args.dataset_name,
         args.ai_source,
         args.prompt,
+        args.estimation_prompt,
         args.token_size,
         args.perturbation_num,
         args.fast_sample_num,
