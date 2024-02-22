@@ -3,7 +3,7 @@ import argparse
 from detector import detect, get_prompt_estimation, get_prompt_sum
 
 
-def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
+def main(dataset_name, ai_source, is_prompt, is_estimated_prompt, ai_source_est):
 
     model_name = "gpt2-xl"
 
@@ -19,12 +19,16 @@ def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
     file_path_human = f"./txtdata/{file_human}.txt"
     file_path_ai = f"./txtdata/{file_ai}.json"
 
-    file_prompt_human = "./txtdata/xsum_est_prompt_for_summary_from_human.json"
-    file_prompt_ai = "./txtdata/xsum_est_prompt_for_summary_from_ai_llama.json"
+    file_prompt_human = (
+        f"./txtdata/xsum_est_prompt_for_summary_from_human_{ai_source_est}.json"
+    )
+    file_prompt_ai = (
+        f"./txtdata/xsum_est_prompt_for_summary_from_ai_{ai_source_est}.json"
+    )
 
     prompt_list = list()
     if is_prompt:
-        if is_estimation_prompt:
+        if is_estimated_prompt:
             prompt_list += get_prompt_estimation(file_prompt_human)
             prompt_list += get_prompt_estimation(file_prompt_ai)
         else:
@@ -45,7 +49,11 @@ def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
     is_radar = False
     is_binoculars = True
 
-    prefix = "_with_prompt" if is_prompt else ""
+    prefix = (
+        f"_with_prompt_est_{bool(is_estimated_prompt)}_{ai_source_est}"
+        if is_prompt
+        else ""
+    )
     prefix += "_only_binoculars"
 
     output_path = f"./results/output{prefix}_{file_ai}"
@@ -72,7 +80,7 @@ def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
         is_radar=is_radar,
         is_binoculars=is_binoculars,
         is_prompt=is_prompt,
-        is_estimation_prompt=is_estimation_prompt,
+        is_estimation_prompt=is_estimated_prompt,
         prompt_list=prompt_list,
     )
 
@@ -80,10 +88,17 @@ def main(dataset_name, ai_source, is_prompt, is_estimation_prompt):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ai_source", default="llama")
+    parser.add_argument("--ai_source_est", default="phi-2")
     parser.add_argument("--dataset_name", default="xsum")
     parser.add_argument("--prompt", action="store_true")
     parser.add_argument("--estimated_prompt", action="store_true")
 
     args = parser.parse_args()
 
-    main(args.dataset_name, args.ai_source, args.prompt, args.estimated_prompt)
+    main(
+        args.dataset_name,
+        args.ai_source,
+        args.prompt,
+        args.estimated_prompt,
+        args.ai_source_est,
+    )

@@ -7,11 +7,12 @@ def main(
     dataset_name,
     ai_source,
     is_prompt,
-    is_estimation_prompt,
+    is_estimated_prompt,
     token_size,
     perturbation_num,
     fast_sample_num,
     pct_words_masked,
+    ai_source_est,
 ):
 
     model_name = "gpt2-xl"
@@ -27,22 +28,26 @@ def main(
     file_path_ai = f"./txtdata/{file_ai}.txt"
     file_path_ai = f"./txtdata/{file_ai}.json"
 
-    file_prompt = "./txtdata/xsum_est_prompt_for_summary_from_ai_llama.json"
+    file_prompt_human = (
+        f"./txtdata/xsum_est_prompt_for_summary_from_human_{ai_source_est}.json"
+    )
+    file_prompt_ai = (
+        f"./txtdata/xsum_est_prompt_for_summary_from_ai_{ai_source_est}.json"
+    )
 
+    prompt_list = list()
     if is_prompt:
-        if is_estimation_prompt:
-            prompt_list = get_prompt_estimation(file_prompt)
+        if is_estimated_prompt:
+            prompt_list += get_prompt_estimation(file_prompt_human)
+            prompt_list += get_prompt_estimation(file_prompt_ai)
         else:
             prompt_list = get_prompt_sum()
 
-    else:
-        prompt_list = list()
-
     is_entropy = True
-    is_detectgpt = False
+    is_detectgpt = True
     is_fastdetectgpt = True
     is_lrr = True
-    is_npr = False
+    is_npr = True
     is_fastnpr = True
     is_roberta = True
     is_logp = True
@@ -54,7 +59,11 @@ def main(
     is_radar = False
     is_intrinsicPHD = False
 
-    prefix = "_with_prompt" if is_prompt else ""
+    prefix = (
+        f"_with_prompt_est_{bool(is_estimated_prompt)}_{ai_source_est}"
+        if is_prompt
+        else ""
+    )
     # prefix += "fast0.2"
 
     output_path = f"./results/output{prefix}_{file_ai}_pn{perturbation_num}_fpn{fast_sample_num}_pwm_{pct_words_masked}"
@@ -96,8 +105,9 @@ if __name__ == "__main__":
     parser.add_argument("--estimated_prompt", action="store_true")
     parser.add_argument("--token_size", default=200)
     parser.add_argument("--perturbation_num", default=5, type=int)
-    parser.add_argument("--fast_sample_num", default=10000, type=int)
+    parser.add_argument("--fast_sample_num", default=100, type=int)
     parser.add_argument("--pct_words_num", default=0.1, type=float)
+    parser.add_argument("--ai_source_est", default="neural-chat")
 
     args = parser.parse_args()
 
@@ -105,9 +115,10 @@ if __name__ == "__main__":
         args.dataset_name,
         args.ai_source,
         args.prompt,
-        args.estimation_prompt,
+        args.estimated_prompt,
         args.token_size,
         args.perturbation_num,
         args.fast_sample_num,
         args.pct_words_num,
+        args.ai_source_est,
     )
