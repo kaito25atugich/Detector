@@ -929,20 +929,7 @@ def detect(
     output_path: str,
     figure_output_path: str,
     model_name: str,
-    is_entropy: bool = True,
-    is_detectgpt: bool = True,
-    is_fastdetectgpt: bool = True,
-    is_lrr: bool = True,
-    is_npr: bool = True,
-    is_fastnpr: bool = True,
-    is_roberta: bool = True,
-    is_rank: bool = True,
-    is_log_rank: bool = True,
-    is_logp: bool = True,
-    is_max: bool = True,
-    is_intrinsicPHD: bool = True,
-    is_radar: bool = True,
-    is_binoculars: bool = False,
+    flag_dict: dict[str, bool],
     datasize: int = 200,
     perturbation_num: int = 5,
     pct_words_masked: float = 0.1,
@@ -977,20 +964,7 @@ def detect(
 
     detector = Detector(
         model_name,
-        is_entropy=is_entropy,
-        is_detectgpt=is_detectgpt,
-        is_fastdetectgpt=is_fastdetectgpt,
-        is_lrr=is_lrr,
-        is_npr=is_npr,
-        is_fastnpr=is_fastnpr,
-        is_roberta_detector=is_roberta,
-        is_rank=is_rank,
-        is_log_rank=is_log_rank,
-        is_log_p=is_logp,
-        is_max=is_max,
-        is_intrinsicPHD=is_intrinsicPHD,
-        is_radar=is_radar,
-        is_binoculars=is_binoculars,
+        **flag_dict,
         is_prompt=is_prompt,
         prompt_list=prompt_list,
         label_list=label_list,
@@ -1031,37 +1005,33 @@ def detect(
     save_roc_curves(figure_output_path + ".png", output_json, model_name)
 
 
-# def get_prompt_all(prompt_text, text):
-#     return f"""[INST] <<SYS>>
-#     {prompt_text}
-#     <</SYS>>
-#     {text}[/INST]"""
-
-
 def get_prompt_all(prompt_text, text):
     return prompt_text + text
 
 
-def get_prompt_sum():
-    prompt_text = "Would you summarize following sentences, please."
+def get_prompts(dataset_name):
+    if dataset_name == "xsum":
+        prompt_txt = "Would you summarize following sentences, please."
+    elif dataset_name == "writingprompts":
+        prompt_txt = "Please continue the stropy in the following sentences."
+    else:
+        raise ValueError(f"We cannot find the prompt for {dataset_name}")
 
+    return get_prompt(dataset_name, prompt_txt)
+
+
+def get_prompt(dataset_name, prompt_txt):
     prompt_texts = list()
 
-    data = _load_texts("./txtdata/xsum_human_for_sum.txt")
+    data = _load_texts(f"./txtdata/{dataset_name}_prompt.json")
 
     for value in data:
-        prompt_texts.append(get_prompt_all(prompt_text, value))
+        prompt_texts.append(get_prompt_all(prompt_txt, value))
 
     return prompt_texts
 
 
 def get_prompt_estimation(file_path):
-    prompt_texts = list()
-
-    data = _load_texts("./txtdata/xsum_human_for_sum.txt")
     prompts = _load_texts_from_json(file_path)
 
-    for p, d in zip(prompts, data):
-        prompt_texts.append(get_prompt_all(p, d))
-
-    return prompt_texts
+    return prompts

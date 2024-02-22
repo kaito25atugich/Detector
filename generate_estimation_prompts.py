@@ -37,7 +37,7 @@ def get_prompt(system_prompt, batch, model_name):
     return prompt
 
 
-def main(dataset_name, max_new_tokens):
+def main(dataset_name, max_new_tokens, source="human"):
     model_name = "meta-llama/Llama-2-7b-chat-hf"
     model_name = "WeeRobots/phi-2-chat-v05"
     # model_name = "dfurman/Falcon-7B-Chat-v0.1"
@@ -45,16 +45,17 @@ def main(dataset_name, max_new_tokens):
 
     model_name_short = model_name.split("/")[-1]
 
-    file_name = f"./txtdata/{dataset_name}_human.txt"
-    # file_name = "./txtdata/xsum_summary_from_ai_llama_summarize.json"
+    if source == "human":
+        file_name = f"./txtdata/{dataset_name}_human.json"
+    else:
+        file_name = "./txtdata/{dataset_name}_from_ai_llama_{max_new_token}.json"
 
     load_fn = _load_texts if file_name[-3:] == "txt" else _load_texts_from_json
-    source = "human" if "human" in file_name else "ai"
 
     print(load_fn)
 
     output_path = (
-        f"./txtdata/xsum_est_prompt_for_summary_from_{source}_{model_name_short}.json"
+        f"./txtdata/{dataset_name}_est_prompt_from_{source}_{model_name_short}.json"
     )
 
     model = AutoModelForCausalLM.from_pretrained(
@@ -106,5 +107,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--max_new_tokens", default=200)
     parser.add_argument("--dataset_name", default="xsum")
+    parser.add_argument("--source", default="human", choices=["ai", "human"])
     args = parser.parse_args()
-    main(args.dataset_name, args.max_new_tokens)
+    main(args.dataset_name, args.max_new_tokens, args.source)
