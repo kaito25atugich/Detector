@@ -37,25 +37,27 @@ def get_prompt(system_prompt, batch, model_name):
     return prompt
 
 
-def main(dataset_name, max_new_tokens, source="human"):
-    model_name = "meta-llama/Llama-2-7b-chat-hf"
-    model_name = "WeeRobots/phi-2-chat-v05"
+def main(dataset_name, max_new_tokens, model_name_short, source="human"):
+    if model_name_short == "llama2":
+        model_name = "meta-llama/Llama-2-7b-chat-hf"
+    elif model_name_short == "phi2":
+        model_name = "WeeRobots/phi-2-chat-v05"
+    elif model_name_short == "neural-chat":
+        model_name = "Intel/neural-chat-7b-v3-1"
     # model_name = "dfurman/Falcon-7B-Chat-v0.1"
-    # model_name = "Intel/neural-chat-7b-v3-1"
-
-    model_name_short = model_name.split("/")[-1]
 
     if source == "human":
         file_name = f"./txtdata/{dataset_name}_human.json"
     else:
-        file_name = "./txtdata/{dataset_name}_from_ai_llama_{max_new_token}.json"
+        if dataset_name == "HC3":
+            file_name = f"./txtdata/{dataset_name}_ai.json"
+        else:
+            file_name = f"./txtdata/{dataset_name}_from_ai_llama2_200.json"
 
     load_fn = _load_texts if file_name[-3:] == "txt" else _load_texts_from_json
 
-    print(load_fn)
-
     output_path = (
-        f"./txtdata/{dataset_name}_est_prompt_from_{source}_{model_name_short}.json"
+        f"./txtdata/{dataset_name}_est_prompt2_from_{source}_{model_name_short}.json"
     )
 
     model = AutoModelForCausalLM.from_pretrained(
@@ -72,7 +74,10 @@ def main(dataset_name, max_new_tokens, source="human"):
 
     with tqdm(dataset) as pbar:
         for i, batch in enumerate(pbar):
+            # first approach
             system_prompt = "Please create a prompt for the following sentence."
+            # second
+            system_prompt = "Craft a prompt to generate sentences that exhibit more human-like qualities."
             input_text = get_prompt(system_prompt, batch, model_name)
             input_text_encoded = tokenizer(input_text, return_tensors="pt").to(DEVICE)
             token_size = len(input_text_encoded.input_ids)
@@ -87,10 +92,11 @@ def main(dataset_name, max_new_tokens, source="human"):
                     return_dict_in_generate=True,
                     max_new_tokens=max_new_tokens,
                     do_sample=True,
-                    temperature=0.7,
+                    temperature=1.0,
                     top_p=0.95,
                     top_k=40,
                     repetition_penalty=1.0,
+                    pad_token_id=tokenizer.eos_token_id,
                 )
 
             output_text = tokenizer.decode(
@@ -105,8 +111,9 @@ def main(dataset_name, max_new_tokens, source="human"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max_new_tokens", default=200)
+    parser.add_argument("--max_new_tokens", default=75)
     parser.add_argument("--dataset_name", default="xsum")
+    parser.add_argument("--model_name", default="neural-chat")
     parser.add_argument("--source", default="human", choices=["ai", "human"])
     args = parser.parse_args()
-    main(args.dataset_name, args.max_new_tokens, args.source)
+    main(args.dataset_name, args.max_new_tokens, args.model_name, args.source)

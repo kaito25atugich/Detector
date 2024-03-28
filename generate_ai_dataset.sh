@@ -1,0 +1,2 @@
+python generate_ai_dataset.py
+python generate_ai_dataset.py --dataset_name writingprompts

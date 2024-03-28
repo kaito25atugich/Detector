@@ -19,11 +19,11 @@ def main():
 
     with open(file_b_path, "r") as f:
         human_prompt_texts = json.load(f)
-
+    
     size = 10
 
     ai_texts = random.sample(list(ai_prompt_texts.values()), size)
-    human_texts = random.sample(list(human_prompt_texts.values()), size)
+    human_texts = random.sample(list(human_prompt_texts.values())
 
     bertscore = load("bertscore")
 

@@ -5,9 +5,12 @@ import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from utils import _load_texts_from_json
+from utils import _load_texts_from_json, set_seed
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+set_seed()
 
 
 def main(dataset_name, max_new_tokens):

@@ -4,12 +4,17 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from utils import set_seed
+
+set_seed()
+
 
 def gen_xsum():
     dataset_name = "xsum"
     dataset = load_dataset(dataset_name)
     datasize = 200
     human_txts = dict()
+    context_txts = dict()
 
     dataloader = DataLoader(dataset["train"], shuffle=True)
     counter = 0
@@ -21,11 +26,15 @@ def gen_xsum():
             train_data = batch["document"][0]
             if len(train_data) < 1000 or len(train_data) >= 1500:
                 continue
-            human_txts[counter] = train_data
+            human_txts[counter] = batch["summary"][0]
+            context_txts[counter] = train_data
             counter += 1
 
     with open(f"./txtdata/{dataset_name}_human.json", "w") as f:
         json.dump(human_txts, f, ensure_ascii=False)
+
+    with open(f"./txtdata/{dataset_name}_prompt.json", "w") as f:
+        json.dump(context_txts, f, ensure_ascii=False)
 
 
 def gen_wp():
@@ -47,14 +56,14 @@ def gen_wp():
             if check_length(human_data):
                 continue
             human_txts[counter] = human_data
-            context_txts[counter] = batch["prompt"]
+            context_txts[counter] = batch["prompt"][0]
             counter += 1
     dataset_splitted = dataset_name.split("/")[-1]
     with open(f"./txtdata/{dataset_splitted}_human.json", "w") as f:
         json.dump(human_txts, f, ensure_ascii=False)
 
     with open(f"./txtdata/{dataset_splitted}_prompt.json", "w") as f:
-        json.dump(human_txts, f, ensure_ascii=False)
+        json.dump(context_txts, f, ensure_ascii=False)
 
 
 def gen_hc3():
@@ -87,7 +96,7 @@ def gen_hc3():
                 continue
             human_txts[counter] = human_data
             ai_txts[counter] = ai_data
-            question_txts[counter] = batch["question"]
+            question_txts[counter] = batch["question"][0]
             counter += 1
 
     dataset_splitted = dataset_name.split("/")[-1]
@@ -95,13 +104,13 @@ def gen_hc3():
         json.dump(human_txts, f, ensure_ascii=False)
 
     with open(f"./txtdata/{dataset_splitted}_ai.json", "w") as f:
-        json.dump(human_txts, f, ensure_ascii=False)
+        json.dump(ai_txts, f, ensure_ascii=False)
 
     with open(f"./txtdata/{dataset_splitted}_prompt.json", "w") as f:
-        json.dump(human_txts, f, ensure_ascii=False)
+        json.dump(question_txts, f, ensure_ascii=False)
 
 
 if __name__ == "__main__":
     gen_xsum()
     gen_wp()
-    gen_hc3()
+    # gen_hc3()

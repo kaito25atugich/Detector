@@ -16,6 +16,11 @@ This project is designed with reproducibility in mind and can be used for paper 
 - Intrinsic-Dimension
 
 ### How to use
+0. First, You need to create directories.
+```
+mkdir results plots txtdata
+```
+
 1. Run the following code to obtain results for the Zero-shot Detector without Binoculars:
 ```
 python detection.py

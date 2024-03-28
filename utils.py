@@ -1,6 +1,9 @@
 import json
+import random
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 from transformers import AutoTokenizer
 
@@ -24,6 +27,14 @@ COLORS = [
 ]
 
 
+def set_seed(seed_value=42):
+    """Set seed for reproducibility."""
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    torch.manual_seed(seed_value)
+    torch.cuda.manual_seed_all(seed_value)
+
+
 def _load_texts(file_path):
     with open(file_path, "r") as f:
         data = f.read()
@@ -35,7 +46,7 @@ def _load_texts(file_path):
 def _load_texts_from_json(file_path):
     with open(file_path, "r") as f:
         data = json.load(f)
-    data_list = [d for d in data.values() if d.replace("\n", "") != ""]
+    data_list = [d for d in data.values()]
     return data_list
 
 

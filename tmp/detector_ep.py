@@ -936,6 +936,7 @@ def detect(
     fast_sample_num: int = 10000,
     additional_string: str = "",
     is_prompt: bool = False,
+    is_estimation_prompt: str = "",
     prompt_list: list[str] = [],
 ):
 
@@ -979,9 +980,12 @@ def detect(
     for idx, text in enumerate(tqdm(all_texts, desc="Some detector is working... :")):
         prompt_label = -1
         if is_prompt:
-            if label_list[idx]:
+            if is_estimation_prompt:
+                prompt_label = idx
+                if is_estimation_prompt == "white-box" and idx < len(human_texts):
+                    prompt_label = -1
+            elif label_list[idx]:
                 prompt_label = idx - len(human_texts)
-            prompt_label = idx
         detector.detect(text, prompt_label)
         for method, score in detector.scores.items():
             scores.setdefault(method, list()).append(score)
@@ -1024,3 +1028,9 @@ def get_prompt(dataset_name, prompt_txt):
         prompt_texts.append(get_prompt_all(prompt_txt, value))
 
     return prompt_texts
+
+
+def get_prompt_estimation(file_path):
+    prompts = _load_texts_from_json(file_path)
+
+    return prompts

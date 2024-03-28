@@ -1,19 +1,18 @@
 import argparse
 
-from detector import detect, get_prompts
-from utils import _load_texts_from_json
+from detector_ep import detect, get_prompt_estimation, get_prompts
 
 
 def main(
     dataset_name,
     ai_source,
     is_prompt,
+    is_estimated_prompt,
     token_size,
     perturbation_num,
     fast_sample_num,
     pct_words_masked,
     ai_source_est,
-    self_prompt,
     flag_dict,
 ):
 
@@ -32,34 +31,25 @@ def main(
     else:
         file_path_ai = f"./txtdata/{file_ai}_{token_size}.json"
 
-    # est_prompt = "est_prompt2"
-    # file_prompt_human = (
-    #     f"./txtdata/{dataset_name}_{est_prompt}_from_human_{ai_source_est}.json"
-    # )
-    # file_prompt_ai = (
-    #     f"./txtdata/{dataset_name}_{est_prompt}_from_ai_{ai_source_est}.json"
-    # )
+    est_prompt = "est_prompt2"
+    file_prompt_human = (
+        f"./txtdata/{dataset_name}_{est_prompt}_from_human_{ai_source_est}.json"
+    )
+    file_prompt_ai = (
+        f"./txtdata/{dataset_name}_{est_prompt}_from_ai_{ai_source_est}.json"
+    )
 
     prompt_list = list()
     if is_prompt:
-        if self_prompt:
-            human_texts, ai_texts = (
-                _load_texts_from_json(file_path_human),
-                _load_texts_from_json(file_path_ai),
-            )
-
-            ai_datasize = min(200, len(ai_texts))
-            human_datasize = min(200, len(human_texts))
-
-            ai_texts = ai_texts[:ai_datasize]
-            human_texts = human_texts[:human_datasize]
-            prompt_list = ai_texts + human_texts
+        if is_estimated_prompt:
+            prompt_list += get_prompt_estimation(file_prompt_human)
+            prompt_list += get_prompt_estimation(file_prompt_ai)
         else:
             prompt_list = get_prompts(dataset_name)
 
-    prefix = f"_with_prompt" if is_prompt else ""
-    if self_prompt:
-        prefix += "_self_prompt"
+    prefix = (
+        f"_with_prompt_est_{is_estimated_prompt}_{ai_source_est}" if is_prompt else ""
+    )
     # prefix += "fast0.2"
 
     output_path = f"./results/output{prefix}_{file_ai}_pn{perturbation_num}_fpn{fast_sample_num}_pwm_{pct_words_masked}_binoulars_{flag_dict['is_binoculars']}"
@@ -77,6 +67,7 @@ def main(
         is_prompt=is_prompt,
         prompt_list=prompt_list,
         flag_dict=flag_dict,
+        is_estimation_prompt=is_estimated_prompt,
     )
 
 
@@ -85,7 +76,11 @@ if __name__ == "__main__":
     parser.add_argument("--ai_source", default="llama2")
     parser.add_argument("--dataset_name", default="xsum")
     parser.add_argument("--prompt", action="store_true")
-    parser.add_argument("--self_prompt", action="store_true")
+    parser.add_argument(
+        "--estimated_prompt",
+        default="",
+        choices=("black-box", "white-box"),
+    )
     parser.add_argument("--token_size", default=200)
     parser.add_argument("--perturbation_num", default=5, type=int)
     parser.add_argument("--fast_sample_num", default=100, type=int)
@@ -118,11 +113,11 @@ if __name__ == "__main__":
         args.dataset_name,
         args.ai_source,
         args.prompt,
+        args.estimated_prompt,
         args.token_size,
         args.perturbation_num,
         args.fast_sample_num,
         args.pct_words_num,
         args.ai_source_est,
-        args.self_prompt,
         flag_dict,
     )
